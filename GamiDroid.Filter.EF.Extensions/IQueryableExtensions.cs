@@ -28,10 +28,10 @@ public static class IQueryableExtensions
         Expression? totalPredicateExpr = null;
         foreach (var property in properties)
         {
-            var propExpr = Expression.Property(paramExpr, property);
+            Expression propExpr = Expression.Property(paramExpr, property);
 
             if (property.PropertyType != typeof(string))
-                continue;
+                propExpr = Expression.Call(propExpr, s_toStringMethodInfo);
 
             var constant = Expression.Constant(searchText);
             Expression predicateExpr = Expression.Call(propExpr, s_stringContainsMethodInfo, constant);
@@ -42,6 +42,9 @@ public static class IQueryableExtensions
         var whereExpression = Expression.Lambda<Func<T, bool>>(totalPredicateExpr!, paramExpr);
         return query.Where(whereExpression);
     }
+
+    private static readonly MethodInfo s_toStringMethodInfo =
+        typeof(object).GetMethod("ToString")!;
      
     private static readonly MethodInfo s_stringContainsMethodInfo =
         typeof(string).GetMethods().Single(m => m.Name == nameof(string.Contains) && 
