@@ -1,8 +1,5 @@
-﻿
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Metadata;
 
 namespace GamiDroid.Filter.EF.Extensions;
 public static class IQueryableExtensions
@@ -33,8 +30,11 @@ public static class IQueryableExtensions
         {
             var propExpr = Expression.Property(paramExpr, property);
 
+            if (property.PropertyType != typeof(string))
+                continue;
+
             var constant = Expression.Constant(searchText);
-            Expression predicateExpr = Expression.Call(s_containsMethodInfo, propExpr, constant);
+            Expression predicateExpr = Expression.Call(propExpr, s_stringContainsMethodInfo, constant);
 
             totalPredicateExpr = (totalPredicateExpr is null) ? predicateExpr : Expression.OrElse(totalPredicateExpr, predicateExpr);
         }
@@ -42,6 +42,10 @@ public static class IQueryableExtensions
         var whereExpression = Expression.Lambda<Func<T, bool>>(totalPredicateExpr!, paramExpr);
         return query.Where(whereExpression);
     }
+     
+    private static readonly MethodInfo s_stringContainsMethodInfo =
+        typeof(string).GetMethods().Single(m => m.Name == nameof(string.Contains) && 
+        m.GetParameters().Length == 1 && m.GetParameters()[0].ParameterType == typeof(string));
 
     private static readonly MethodInfo s_containsMethodInfo =
         typeof(Enumerable).GetMethods().Single(m => m.Name == nameof(Enumerable.Contains) &&
