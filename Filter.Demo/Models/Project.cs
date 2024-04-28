@@ -48,4 +48,7 @@ internal class Project
     public string? FertSkuNew { get; set; }
     public bool? LabelPolicyCompliant { get; set; }
     public string? AlcoholPercentage { get; set; }
+
+    public Organization? Organization { get; set; }
+    public TechnicalTemplate? TechnicalTemplate { get; set; }
 }
