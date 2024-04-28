@@ -30,6 +30,9 @@ public static class IQueryableExtensions
         {
             Expression propExpr = Expression.Property(paramExpr, property);
 
+            if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                continue;
+
             if (property.PropertyType != typeof(string))
                 propExpr = Expression.Call(propExpr, s_toStringMethodInfo);
 
@@ -44,7 +47,7 @@ public static class IQueryableExtensions
     }
 
     private static readonly MethodInfo s_toStringMethodInfo =
-        typeof(object).GetMethod("ToString")!;
+        typeof(object).GetMethod(nameof(ToString))!;
      
     private static readonly MethodInfo s_stringContainsMethodInfo =
         typeof(string).GetMethods().Single(m => m.Name == nameof(string.Contains) && 
